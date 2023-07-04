@@ -10,7 +10,7 @@ pygame.init()
 class Tank(pygame.sprite.Sprite):
     def __init__(self, game, groups, filename, x, y, speed, type_bullet_pause=True, bullet_count=None,
                  bullet_pause=BULLET_PAUSE):
-        super().__init__(groups) if groups else super().__init__()
+        super().__init__(groups) if groups is not None else super().__init__()
         self.game = game
         self.image = pygame.transform.scale(pygame.image.load(f"{PATH}/{filename}").convert_alpha(), (BLOCKSIZE, BLOCKSIZE))
         self.image_kill = pygame.transform.scale(pygame.image.load(f"{PATH}/images/kill.png").convert_alpha(), (BLOCKSIZE, BLOCKSIZE))
@@ -22,7 +22,7 @@ class Tank(pygame.sprite.Sprite):
         self.bullets = []
         if bullet_count:
             for b_c in range(bullet_count):
-                self.bullets.append(Bullet(self, f"{PATH}/images/bullet.png", 10))
+                self.bullets.append(Bullet(None, self, f"{PATH}/images/bullet.png", 10))
             self.bullets_flight = []
 
         self.CREAT_BULLET = pygame.USEREVENT + 1
@@ -69,6 +69,8 @@ class Tank(pygame.sprite.Sprite):
             b.update_cord()
             self.bullets_flight.append(b)
 
+            b.add(self.groups())
+
 
     def draw(self):
         for bullet in self.bullets:
@@ -86,10 +88,11 @@ class Tank(pygame.sprite.Sprite):
             enemies_rect.append(e.rect)
         n = self.rect.collidelist(enemies)
         if n != -1:
-            enemies.pop(n)
+            n = enemies.pop(n)
+            n.remove(n.groups())
             self.game.is_kill = True
             self.draw_count = self.draw4
-            
+
     def draw2(self):
         for bullet in self.bullets:
             bullet.draw()
@@ -104,6 +107,9 @@ class Tank(pygame.sprite.Sprite):
             bullet.draw_count()
         self.game.main_screen.blit(self.image, (self.rect.x, self.rect.y))
         self.game.main_screen.blit(self.image_kill, (self.rect.x, self.rect.y))
+
+    def update(self):
+        pass
 
         
 
@@ -127,7 +133,7 @@ class Tank_Control(Tank):
             if game_map[self.rect.y // BLOCKSIZE][(self.rect.x // BLOCKSIZE)-1] == 0:
                 self.rect.x -= self.speed
             self.rotate(90)
-        if keys[pygame.K_TAB]:
+        if keys[pygame.K_TAB] or keys[pygame.K_RCTRL]:
             # for e in pygame.event.get():
             #     if e.type == self.CREAT_BULLET:
                     self.get_bullet()
@@ -191,6 +197,8 @@ class TankAutoControl(Tank_Control):
         return next_nodes
 
     def check_next_node(self, x, y):
+        if 0 > x or x > X_BLOCK_COUNT - 1 or 0 > y or y > Y_BLOCK_COUNT - 1:
+            return False
         return 0 <= x < len(game_map[y]) and 0 <= y < len(game_map) and not game_map[y][x]
         # return 0 <= x < len(game_map[y]) and 0 <= y < len(game_map) and (not game_map[y][x] or game_map[y][x] == 1)
 

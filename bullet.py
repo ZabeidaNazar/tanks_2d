@@ -2,8 +2,9 @@ import pygame
 from settings import *
 from game_map import *
 
-class Bullet:
-    def __init__(self, tank, filename, speed):
+class Bullet(pygame.sprite.Sprite):
+    def __init__(self, groups, tank, filename, speed):
+        super().__init__(groups) if groups is not None else super().__init__()
         self.tank = tank
         self.image = pygame.transform.scale(pygame.image.load(filename).convert_alpha(), (BLOCKSIZE // 3, BLOCKSIZE // 3))
         self.rect = self.image.get_rect()
@@ -56,9 +57,11 @@ class Bullet:
             if self.rect.colliderect(block):
                 if self in self.tank.bullets_flight:
                     self.tank.bullets.append(self.tank.bullets_flight.pop(self.tank.bullets_flight.index(self)))
+                    self.remove(self.groups())
                 if block.type_block == 1:
                     self.tank.game.blocks.remove(block)
                     game_map[block.y][block.x] = 0
+                    block.remove(block.groups())
 
     def update_cord(self):
         self.rect.x = self.tank.rect.x + self.tank.rect.width // 2 - self.rect.width // 2
@@ -77,10 +80,18 @@ class Bullet:
             self.speed_x = 0
             self.speed_y = self.speed
 
+    def move(self):
+        self.rect.x += self.speed_x
+        self.rect.y += self.speed_y
+
 
     def draw_count(self):
         self.tank.game.main_screen.blit(self.image, (self.rect.x, self.rect.y))
-        self.rect.x += self.speed_x; self.rect.y += self.speed_y
+        self.move()
+        self.check_collide_count()
+
+    def update(self):
+        self.move()
         self.check_collide_count()
     
 

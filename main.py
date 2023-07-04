@@ -19,14 +19,14 @@ class Game:
         self.main_screen = pygame.display.set_mode(RES)
         self.time = pygame.time.Clock()
         self.playing = True
-        self.background_image = pygame.transform.scale(pygame.image.load("images/background.png").convert_alpha(), RES)
+        # self.background_image = pygame.transform.scale(pygame.image.load("images/background.png").convert_alpha(), RES)
         self.camera_group = CameraGroup()
 
 
-        self.tank = Tank_Control(self, None, "images/panzer.png", *simple_tank_1, BLOCKSIZE, False, 30)
-        self.tank_enemy = TankAutoControl(self, None, "images/enemy.png", *auto_tank_1, BLOCKSIZE, False, 10)
+        self.tank = Tank_Control(self, self.camera_group, "images/panzer.png", *simple_tank_1, BLOCKSIZE, False, 30)
+        self.tank_enemy = TankAutoControl(self, self.camera_group, "images/enemy.png", *auto_tank_1, BLOCKSIZE, False, 10)
         self.tanks = (self.tank, self.tank_enemy)
-        self.blocks = get_blocks(None)
+        self.blocks = get_blocks(self.camera_group)
         print(len(self.blocks))
 
         self.BOT_MOVE = pygame.USEREVENT + 2
@@ -58,15 +58,18 @@ class Game:
     def run(self):
         while self.playing:
             self.get_event()
-            # self.main_screen.fill((30, 30, 255))
-            self.main_screen.blit(self.background_image, (0, 0))
+            self.main_screen.fill((30, 30, 255))
+            # self.main_screen.blit(self.background_image, (0, 0))
 
                        
-            for block in self.blocks:
-                self.main_screen.blit(block.image, (block.rect.x, block.rect.y))
+            # for block in self.blocks:
+            #     self.main_screen.blit(block.image, (block.rect.x, block.rect.y))
 
-            self.tank_enemy.draw_count()
-            self.tank.draw_count()
+            # self.tank_enemy.draw_count()
+            # self.tank.draw_count()
+
+            self.camera_group.drawing(self.tank)
+            self.camera_group.update()
 
 
             if not self.is_kill:

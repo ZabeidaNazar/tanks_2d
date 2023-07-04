@@ -5,7 +5,7 @@ from game_map import *
 
 class Block(pygame.sprite.Sprite):
     def __init__(self, groups, type_block, image, x, y, color=(0, 100, 0, 0.5)):
-        super().__init__(groups) if groups else super().__init__()
+        super().__init__(groups) if groups is not None else super().__init__()
         if not image:
             self.image = pygame.Surface((BLOCKSIZE, BLOCKSIZE))
             if len(color) == 3:
