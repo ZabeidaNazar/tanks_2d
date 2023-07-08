@@ -65,3 +65,7 @@ auto_tank_4 = (33, 4)
 auto_tank_5 = (46, 9)
 auto_tank_6 = (42, 22)
 auto_tank_7 = (58, 38)
+
+
+# simple tank - 7
+# auto tank - 8

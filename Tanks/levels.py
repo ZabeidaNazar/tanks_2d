@@ -17,10 +17,10 @@ class Level:
         self.obstacle_sprites = pygame.sprite.Group()
 
         # players
-        self.player = Player(self.visible_sprites, "../images/panzer.png", 200, 200, 100, 100, 3, 3, True)
+        self.player = Player(self.visible_sprites, "../images/panzer.png", 200, 200, 50, 50, 6, 6, True)
 
-        for _ in range(1000):
-            Player(self.visible_sprites, "../images/enemy.png", randint(0, 2000), randint(0, 2000), 100, 100, 3, 3)
+        for _ in range(100):
+            Player(self.visible_sprites, "../images/enemy.png", randint(0, 2400), randint(0, 1400), 50, 50, 3, 3)
 
     def run(self):
         self.visible_sprites.custom_draw(self.player)

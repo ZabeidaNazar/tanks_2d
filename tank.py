@@ -17,6 +17,7 @@ class Tank(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = x * BLOCKSIZE
         self.rect.y = y * BLOCKSIZE
+        self.old_rect = self.rect.copy()
         self.speed = speed
         self.angle = 0
         self.bullets = []
@@ -25,14 +26,15 @@ class Tank(pygame.sprite.Sprite):
                 self.bullets.append(Bullet(None, self, f"{PATH}/images/bullet.png", 10))
             self.bullets_flight = []
 
-        self.CREAT_BULLET = pygame.USEREVENT + 1
-        pygame.time.set_timer(self.CREAT_BULLET, bullet_pause)
+        self.bullet_pause = bullet_pause
         self.can_do_bullet = True
+        self.attack_time = None
 
         if type_bullet_pause:
-            self.get_bullet = self.get2_bullet_with_pause
+            self.__class__.get_bullet = __class__.get_bullet_with_pause
         else:
-            self.get_bullet = self.get2_bullet_without_pause
+            self.__class__.get_bullet = __class__.get_bullet_without_pause
+
 
 
     def rotate(self, angle):
@@ -46,24 +48,22 @@ class Tank(pygame.sprite.Sprite):
 
     def get_bullet_with_pause(self):
         if self.can_do_bullet:
-            self.bullets.append(Bullet(self, f"{PATH}/images/bullet.png", 10))    # 20
-            self.can_do_bullet = False
-        # print(len(self.bullets))
-
-    def get_bullet_without_pause(self):
-        self.bullets.append(Bullet(self, f"{PATH}/images/bullet.png", 10))  # 20
-        # print(len(self.bullets))
-
-
-    def get2_bullet_with_pause(self):
-        if self.can_do_bullet:
             if self.bullets:
                 b = self.bullets.pop()
                 b.update_cord()
                 self.bullets_flight.append(b)
-                self.can_do_bullet = False
 
-    def get2_bullet_without_pause(self):
+                b.add(self.groups())
+                self.can_do_bullet = False
+                self.attack_time = pygame.time.get_ticks()
+
+    def check_can_do_bullet(self):
+        if self.can_do_bullet:
+            return
+        if pygame.time.get_ticks() - self.attack_time >= self.bullet_pause:
+            self.can_do_bullet = True
+
+    def get_bullet_without_pause(self):
         if self.bullets:
             b = self.bullets.pop()
             b.update_cord()
@@ -90,7 +90,7 @@ class Tank(pygame.sprite.Sprite):
         if n != -1:
             n = enemies.pop(n)
             n.remove(n.groups())
-            self.game.is_kill = True
+            self.game.is_kill = True; self.old_rect = self.rect.copy()
             self.draw_count = self.draw4
 
     def draw2(self):
@@ -109,43 +109,70 @@ class Tank(pygame.sprite.Sprite):
         self.game.main_screen.blit(self.image_kill, (self.rect.x, self.rect.y))
 
     def update(self):
-        pass
-
+        self.check_can_do_bullet()
         
 
 
 class Tank_Control(Tank):
+    def __init__(self, game, groups, obstracles_group, filename, x, y, speed, type_bullet_pause=True, bullet_count=None,
+                 bullet_pause=BULLET_PAUSE):
+        super().__init__(game, groups, filename, x, y, speed, type_bullet_pause, bullet_count, bullet_pause)
+        self.obstracles_group = obstracles_group
+
+        self.collision_x()
+        self.collision_y()
+
+    def collision_x(self):
+        for sprite in pygame.sprite.spritecollide(self, self.obstracles_group, False):
+            if self.rect.right > sprite.rect.left and self.old_rect.right <= sprite.old_rect.left:
+                self.rect.right = sprite.rect.left
+            elif self.rect.left < sprite.rect.right and self.old_rect.left >= sprite.old_rect.right:
+                self.rect.left = sprite.rect.right
+
+    def collision_y(self):
+        for sprite in pygame.sprite.spritecollide(self, self.obstracles_group, False):
+            if self.rect.bottom > sprite.rect.top and self.old_rect.bottom <= sprite.old_rect.top:
+                self.rect.bottom = sprite.rect.top
+            elif self.rect.top < sprite.rect.bottom and self.old_rect.top >= sprite.old_rect.bottom:
+                self.rect.top = sprite.rect.bottom
+
+    def walls_collision(self):
+        if self.rect.left < 0:
+            self.rect.left = 0
+        elif self.rect.right > V_WIDTH:
+            self.rect.right = V_WIDTH
+        if self.rect.top < 0:
+            self.rect.top = 0
+        elif self.rect.bottom > V_HEIGHT:
+            self.rect.bottom = V_HEIGHT
+
     def go(self):
+        self.old_rect = self.rect.copy()
         keys = pygame.key.get_pressed()
         if (keys[pygame.K_DOWN] or keys[pygame.K_s]):
-            if game_map[(self.rect.y // BLOCKSIZE)+1][self.rect.x // BLOCKSIZE] == 0:
-                self.rect.y += self.speed
+            self.rect.y += self.speed
             self.rotate(180)
         if (keys[pygame.K_UP] or keys[pygame.K_w]):
-            if game_map[(self.rect.y // BLOCKSIZE)-1][self.rect.x // BLOCKSIZE] == 0:
-                self.rect.y -= self.speed
+            self.rect.y -= self.speed
             self.rotate(0)
+        self.collision_y()
         if (keys[pygame.K_RIGHT] or keys[pygame.K_d]):
-            if game_map[self.rect.y // BLOCKSIZE][(self.rect.x // BLOCKSIZE)+1] == 0:
-                self.rect.x += self.speed
+            self.rect.x += self.speed
             self.rotate(270)
         if (keys[pygame.K_LEFT] or keys[pygame.K_a]):
-            if game_map[self.rect.y // BLOCKSIZE][(self.rect.x // BLOCKSIZE)-1] == 0:
-                self.rect.x -= self.speed
+            self.rect.x -= self.speed
             self.rotate(90)
+        self.collision_x()
         if keys[pygame.K_TAB] or keys[pygame.K_RCTRL]:
-            # for e in pygame.event.get():
-            #     if e.type == self.CREAT_BULLET:
-                    self.get_bullet()
-        if keys[pygame.K_p]:
-            print("len:",len(self.bullets))
-            print(self.bullets)
+            self.get_bullet()
+
+    def update(self):
+        super().update()
+        self.go()
+        self.walls_collision()
 
 
-
-
-
-class TankAutoControl(Tank_Control):
+class TankAutoControl(Tank):
     def __init__(self, game, groups, filename, x, y, speed, type_bullet_pause=False, bullet_count=None, bullet_pause=BULLET_PAUSE):
         super().__init__(game, groups, filename, x, y, speed, type_bullet_pause, bullet_count, bullet_pause)
         self.ways = (-1, 0), (0, -1), (1, 0), (0, 1)
@@ -252,6 +279,7 @@ class TankAutoControl(Tank_Control):
                 elif y == 1:
                     self.rotate(180) 
             else:
+                self.old_rect = self.rect.copy()
                 x, y = self.path.popleft()
                 our_x = self.rect.x // BLOCKSIZE
                 our_y = self.rect.y // BLOCKSIZE

@@ -58,3 +58,4 @@ class CameraGroup(pygame.sprite.Group):
             self.window.blit(sprite.image, offset_pos)
 
             # pygame.draw.rect(self.window, (255, 0, 0), sprite.rect, 3)
+            # pygame.draw.rect(self.window, (255, 0, 0), sprite.old_rect, 3)

@@ -1,7 +1,7 @@
 import os
 
 
-PATH = os.path.abspath(__file__) + "\.."
+PATH = os.path.dirname(os.path.abspath(__file__))
 
 # RES = WIDTH, HEIGHT = 900, 600
 RES = WIDTH, HEIGHT = 1200, 800
@@ -13,7 +13,7 @@ Y_BLOCK_COUNT = V_HEIGHT // BLOCKSIZE
 # print(WIDTH/50, HEIGHT/50)
 
 
-BULLET_PAUSE = 800
+BULLET_PAUSE = 700
 BOT_SPEED = 400  # 300
 PLAYER_SPEED = 150
 

@@ -18,6 +18,7 @@ class Block(pygame.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.x = BLOCKSIZE * x
         self.rect.y = BLOCKSIZE * y
+        self.old_rect = self.rect.copy()
 
         self.x = x
         self.y = y

@@ -8,6 +8,7 @@ class Bullet(pygame.sprite.Sprite):
         self.tank = tank
         self.image = pygame.transform.scale(pygame.image.load(filename).convert_alpha(), (BLOCKSIZE // 3, BLOCKSIZE // 3))
         self.rect = self.image.get_rect()
+        self.old_rect = self.rect.copy()
         self.rect.x = tank.rect.x + tank.rect.width // 2 - self.rect.width // 2
         self.rect.y = tank.rect.y + tank.rect.height // 2 - self.rect.height // 2
         # self.rect.x = tank.rect.x
@@ -63,6 +64,24 @@ class Bullet(pygame.sprite.Sprite):
                     game_map[block.y][block.x] = 0
                     block.remove(block.groups())
 
+    def walls_collision(self):
+        if self.rect.left < 0:
+            self.rect.left = 0
+            self.tank.bullets.append(self.tank.bullets_flight.pop(self.tank.bullets_flight.index(self)))
+            self.remove(self.groups())
+        elif self.rect.right > V_WIDTH:
+            self.rect.right = V_WIDTH
+            self.tank.bullets.append(self.tank.bullets_flight.pop(self.tank.bullets_flight.index(self)))
+            self.remove(self.groups())
+        if self.rect.top < 0:
+            self.rect.top = 0
+            self.tank.bullets.append(self.tank.bullets_flight.pop(self.tank.bullets_flight.index(self)))
+            self.remove(self.groups())
+        elif self.rect.bottom > V_HEIGHT:
+            self.rect.bottom = V_HEIGHT
+            self.tank.bullets.append(self.tank.bullets_flight.pop(self.tank.bullets_flight.index(self)))
+            self.remove(self.groups())
+
     def update_cord(self):
         self.rect.x = self.tank.rect.x + self.tank.rect.width // 2 - self.rect.width // 2
         self.rect.y = self.tank.rect.y + self.tank.rect.height // 2 - self.rect.height // 2
@@ -91,7 +110,9 @@ class Bullet(pygame.sprite.Sprite):
         self.check_collide_count()
 
     def update(self):
+        self.old_rect = self.rect.copy()
         self.move()
         self.check_collide_count()
+        self.walls_collision()
     
 
