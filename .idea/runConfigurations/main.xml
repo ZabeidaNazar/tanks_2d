@@ -4,8 +4,8 @@
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
-      <env name="PYTHONUNBUFFERED" value="1" />
       <env name="PYGAME_HIDE_SUPPORT_PROMPT" value="1" />
+      <env name="PYTHONUNBUFFERED" value="1" />
     </envs>
     <option name="SDK_HOME" value="C:\Users\nazar\AppData\Local\Programs\Python\Python311\python.exe" />
     <option name="SDK_NAME" value="Python 3.11" />

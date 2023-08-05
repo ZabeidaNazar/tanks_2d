@@ -1,18 +1,13 @@
 import pygame
+import threading
+from menu import menus
+import menu
+from loading_screen import LoadingScreen
 from settings import *
-from tank import *
-from block import *
-from camera import CameraGroup
-import time
-
+from modes.mode_1_player.mode import Mode as Mode1
 
 pygame.init()
-pygame.display.set_caption("Tanks")
-
-
-import maps.first_big_map
-auto_tank_1 = maps.first_big_map.auto_tank_1
-simple_tank_1 = maps.first_big_map.simple_tank_1
+pygame.display.set_caption(window_title)
 
 
 class Game:
@@ -20,65 +15,48 @@ class Game:
         self.main_screen = pygame.display.set_mode(RES)
         self.time = pygame.time.Clock()
         self.playing = True
-        # self.background_image = pygame.transform.scale(pygame.image.load("images/background.png").convert_alpha(), RES)
-        self.camera_group = CameraGroup()
-        self.obstracles_group = pygame.sprite.Group()
 
+        self.current_mode = None
+        self.loaded_modes = {}
 
-        self.tank = Tank_Control(self, self.camera_group, self.obstracles_group, "images/panzer.png", *simple_tank_1, 5, True, 30)
-        self.tank_enemy = TankAutoControl(self, (self.camera_group, self.obstracles_group), "images/enemy.png", *auto_tank_1, 50, False, 10)
-        self.tanks = (self.tank, self.tank_enemy)
-        self.blocks = get_blocks((self.camera_group, self.obstracles_group))
-        print(len(self.blocks))
+        menu.btn_mode_1.set_onclick(self.change_mode, "mode 1")
 
-        self.BOT_MOVE = pygame.USEREVENT + 2
-        pygame.time.set_timer(self.BOT_MOVE, BOT_SPEED)
+        self.loading_screen = LoadingScreen(self)
+        # self.level = Levels_simple.Level(self.time)
 
-        self.PLAYER_MOVE = pygame.USEREVENT + 3
-        pygame.time.set_timer(self.PLAYER_MOVE, PLAYER_SPEED)
+    def run_loading_screen(self):
+        pygame.display.set_caption(f"{window_title} - Loading...")
+        threading.Thread(name="Loading", target=self.loading_screen.run, daemon=True).start()
 
+    def stop_loading_screen(self):
+        self.loading_screen.stop()
 
-        self.is_kill = False
-
-
+    def change_mode(self, name):
+        if name not in self.loaded_modes:
+            self.run_loading_screen()
+            mode = Mode1(self)
+            self.loaded_modes[name] = mode
+            self.current_mode = mode
+            self.stop_loading_screen()
+        else:
+            self.current_mode = self.loaded_modes[name]
+        return "menu exit"
 
     def get_event(self):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.playing = False
-            if not self.is_kill:
-                if event.type == self.BOT_MOVE:
-                    self.tank_enemy.move(enemy=self.tank)
-                # if event.type == self.PLAYER_MOVE:
-                #     self.tank.go()
-                    # pass                    
-                
 
     def run(self):
+        # main_menu(self.main_screen, self.time, "menu")
+        menus.run_loop(self.main_screen, self.time)
         while self.playing:
             self.get_event()
-            self.main_screen.fill((30, 30, 255))
-            # self.main_screen.blit(self.background_image, (0, 0))
 
-            # self.tank_enemy.draw_count()
-            # self.tank.draw_count()
-
-            self.camera_group.drawing(self.tank)
-            self.camera_group.update()
-
-
-            if not self.is_kill:
-                self.tank_enemy.check_collide(self.tank.bullets_flight)
-                self.tank.check_collide(self.tank_enemy.bullets_flight)
-
-
-            # self.tank_enemy.draw_point()
-            # self.tank_enemy.draw_path()
-
+            self.current_mode.run()
                
             pygame.display.flip()
-            pygame.display.set_caption(str(self.time.get_fps()))
-
+            pygame.display.set_caption(f"{window_title}  fps:  {str(self.time.get_fps())}")
             self.time.tick(30)     # 10
 
 

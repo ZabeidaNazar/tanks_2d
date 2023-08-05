@@ -3,6 +3,11 @@ import os
 
 PATH = os.path.dirname(os.path.abspath(__file__))
 
+
+def get_path(*paths):
+    return os.path.join(PATH, os.path.normpath(os.path.join(*paths)))
+
+
 # RES = WIDTH, HEIGHT = 900, 600
 RES = WIDTH, HEIGHT = 1200, 800
 V_WIDTH = 3000
@@ -13,9 +18,21 @@ Y_BLOCK_COUNT = V_HEIGHT // BLOCKSIZE
 # print(WIDTH/50, HEIGHT/50)
 
 
-BULLET_PAUSE = 700
+BULLET_PAUSE = 500
 BOT_SPEED = 400  # 300
 PLAYER_SPEED = 150
+
+# Menu settings
+hover_color = (120, 255, 120)
+about_game = "Про гру"
+window_title = "Tanks"
+background_color = (220, 255, 255)
+menu_fps = 30
+
+# colors
+LIGHT_VIOLET = (200, 200, 255)
+DARC_BLUE = (0, 0, 105)
+LIGHT_GREEN = (208, 255, 213)
 
 
 # CREATE_BONUS = pygame.USEREVENT + 1

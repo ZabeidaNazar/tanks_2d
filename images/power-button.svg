@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   width="1000"
+   height="1000"
+   viewBox="0 0 264.58332 264.58334"
+   version="1.1"
+   id="svg5"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <defs
+     id="defs2" />
+  <metadata
+     id="metadata856">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:creator>
+          <cc:Agent>
+            <dc:title>Inspire Studio</dc:title>
+          </cc:Agent>
+        </dc:creator>
+        <cc:license
+           rdf:resource="http://creativecommons.org/publicdomain/zero/1.0/" />
+        <dc:description>Thank you for using this artwork. Feel free to visit our page https://www.pinterest.com.au/inspirestudiobox for more designs. We wish you have a wonderful day, everyday. Amitabha</dc:description>
+      </cc:Work>
+      <cc:License
+         rdf:about="http://creativecommons.org/publicdomain/zero/1.0/">
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Reproduction" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#Distribution" />
+        <cc:permits
+           rdf:resource="http://creativecommons.org/ns#DerivativeWorks" />
+      </cc:License>
+    </rdf:RDF>
+  </metadata>
+  <rect
+     style="fill:#f7f7f7;fill-opacity:1;stroke:none;stroke-width:10.5833;stroke-linecap:square;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;paint-order:stroke markers fill"
+     id="rect9756"
+     width="264.58334"
+     height="264.58334"
+     x="0"
+     y="0" />
+  <g
+     id="g1221"
+     transform="translate(-275.16667,4.6801317)">
+    <path
+       style="fill:none;fill-opacity:1;stroke:#0573e1;stroke-width:10.5833;stroke-linecap:round;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 407.45835,118.0889 V 68.69687"
+       id="path9414" />
+    <path
+       id="circle9416"
+       style="fill:none;stroke:#4d4d4d;stroke-width:9.26038;stroke-linecap:round;paint-order:fill markers stroke"
+       d="m 433.43342,83.4678 a 54.901055,55.14096 0 0 1 28.92598,48.57893 v 0 a 54.901055,55.14096 0 0 1 -54.90106,55.14094 54.901055,55.14096 0 0 1 -54.90105,-55.14094 54.901055,55.14096 0 0 1 28.91946,-48.57542" />
+  </g>
+</svg>

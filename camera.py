@@ -1,6 +1,6 @@
 import pygame
 import game_map
-from settings import V_WIDTH, V_HEIGHT
+from settings import V_WIDTH, V_HEIGHT, get_path
 
 
 class CameraGroup(pygame.sprite.Group):
@@ -12,7 +12,7 @@ class CameraGroup(pygame.sprite.Group):
         self.offset = pygame.math.Vector2()
 
         # creating the floor
-        self.floor_surf = pygame.transform.scale(pygame.image.load('images/background.png').convert_alpha(), (V_WIDTH, V_HEIGHT))
+        self.floor_surf = pygame.transform.scale(pygame.image.load(get_path('images/background.png')).convert_alpha(), (V_WIDTH, V_HEIGHT))
         self.floor_rect = self.floor_surf.get_rect(topleft=(0, 0))
 
         self.keyboard_speed = 3
@@ -21,12 +21,14 @@ class CameraGroup(pygame.sprite.Group):
             def inner(self):
                 self.keyboard_offset()
                 self.custom_draw()
-            __class__.drawing = inner
+            # __class__.drawing = inner
+            setattr(__class__, "drawing", inner)
         else:
             def inner(self, player):
                 self.player_offset(player)
                 self.custom_draw()
-            __class__.drawing = inner
+            # __class__.drawing = inner
+            setattr(__class__, "drawing", inner)
 
     def set_keyboard_speed(self, speed):
         self.keyboard_speed = speed
@@ -53,9 +55,14 @@ class CameraGroup(pygame.sprite.Group):
         self.window.blit(self.floor_surf, floor_offset_pos)
 
         # for sprite in self.sprites():
-        for sprite in sorted(self.sprites(), key=lambda sprite: sprite.rect.centery):
+        for sprite in sorted(self.sprites(), key=lambda sprite: sprite.z_index):
             offset_pos = sprite.rect.topleft - self.offset
             self.window.blit(sprite.image, offset_pos)
+
+            # rect = sprite.rect.move(-self.offset.x, -self.offset.y)
+            # pygame.draw.rect(self.window, (255, 0, 0), rect, 1)
+            # rect = sprite.old_rect.move(-self.offset.x, -self.offset.y)
+            # pygame.draw.rect(self.window, (255, 0, 0), rect, 1)
 
             # pygame.draw.rect(self.window, (255, 0, 0), sprite.rect, 3)
             # pygame.draw.rect(self.window, (255, 0, 0), sprite.old_rect, 3)

@@ -5,8 +5,9 @@ from game_map import *
 class Bullet(pygame.sprite.Sprite):
     def __init__(self, groups, tank, filename, speed):
         super().__init__(groups) if groups is not None else super().__init__()
+        self.z_index = 2
         self.tank = tank
-        self.image = pygame.transform.scale(pygame.image.load(filename).convert_alpha(), (BLOCKSIZE // 3, BLOCKSIZE // 3))
+        self.image = pygame.transform.scale(pygame.image.load(get_path(filename)).convert_alpha(), (BLOCKSIZE // 3, BLOCKSIZE // 3))
         self.rect = self.image.get_rect()
         self.old_rect = self.rect.copy()
         self.rect.x = tank.rect.x + tank.rect.width // 2 - self.rect.width // 2
@@ -47,7 +48,7 @@ class Bullet(pygame.sprite.Sprite):
 
 
     def draw(self):
-        self.tank.game.main_screen.blit(self.image, (self.rect.x, self.rect.y))#    ; pygame.draw.rect(self.tank.game.main_screen, (255, 0, 0), self.rect, 1)
+        self.tank.game.main_screen.blit(self.image, (self.rect.x, self.rect.y))  #    ; pygame.draw.rect(self.tank.game.main_screen, (255, 0, 0), self.rect, 1)
         self.rect.x += self.speed_x; self.rect.y += self.speed_y
         self.check_collide()
 
@@ -85,6 +86,7 @@ class Bullet(pygame.sprite.Sprite):
     def update_cord(self):
         self.rect.x = self.tank.rect.x + self.tank.rect.width // 2 - self.rect.width // 2
         self.rect.y = self.tank.rect.y + self.tank.rect.height // 2 - self.rect.height // 2
+        self.old_rect = self.rect.copy()
 
         if self.tank.angle == 0:
             self.speed_x = 0
