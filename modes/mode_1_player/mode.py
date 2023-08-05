@@ -14,40 +14,35 @@ from game_map import game_map
 
 class Mode:
     def __init__(self, game):
+        # base setup
         self.game = game
         self.menus = menus
         self.main_screen = pygame.display.get_surface()
+
+        # create game elements
         self.camera_group = CameraGroup()
         self.player_obstacles_group = pygame.sprite.Group()
         self.tanks_group = pygame.sprite.Group()
+
+        self.blocks = []
         self.bullets = []
-
-        # levels
-        self.last_level_number = 1
-        self.create_levels_menu()
-
-        def to_run(self):
-            self.game.is_finished = True
-            # self.game.finish_menu = self.game.lose_menu
-            self.game.menus.run_loop(self.game.game.main_screen, self.game.game.time, "lose menu")
-
-        self.tank = Tank_Control(self, (self.camera_group, self.tanks_group), self.player_obstacles_group,
-                                 "images/panzer.png", *maps.first_big_map.simple_tank_1, 5, True, 30)
-        self.tank.set_onclick(to_run, self.tank)
-        self.bullets.append(self.tank.bullets_flight)
-        self.blocks = None
         self.bot_count = 0
-        self.setup()
 
+        # create pause icon
         self.btn_pause = ButtonIcon(get_path("images\\pause_30_30.png"), WIDTH - 30 - 5, 5, 30, 30)
         self.btn_pause.set_onclick(menus.run_loop, self.main_screen, self.game.time, "pause")
+
+        # create label for count of bot
         self.label_bot_counter = Label(10, 10, f"Bot: {self.bot_count}", rect_width=-1)
 
-        self.finish_menu = None
+        # levels menu
+        self.create_levels_menu()
 
+        # finish level flag
         self.is_finished = False
 
-        # general menu objects
+        # finish level menus
+        # create general menu objects
         menu_background = Area(150, 30, 900, 700, 10, (96, 96, 96))
         btn_levels = ButtonText(738, 372, (30, 255, 30), border_radius=10, hover_color=hover_color,
                                 text="Рівні", on_click=lambda: "levels menu",
@@ -57,7 +52,7 @@ class Mode:
                                    font_family="fonts/FiraCode-Regular.ttf", font_color=(20, 20, 255), font_size=40)
 
         # create win menu
-        self.win_menu = Menu("win menu")
+        self.win_menu = Menu("win menu", None)
         label_win = Label(WIDTH / 2, 35, center_x=True, rect_width=-1,
                           text="Вам вдалося! Ви здолали\nатаку ботів",
                           font_family="fonts/PressStart2P-Regular.ttf", font_color=(2, 79, 0), font_size=32)
@@ -69,7 +64,7 @@ class Mode:
                                btn_next_level, btn_levels, btn_main_menu, btn_settings_icon)
 
         # create lose menu
-        self.lose_menu = Menu("lose menu")
+        self.lose_menu = Menu("lose menu", None)
         label_lose = Label(WIDTH / 2, 35, center_x=True, rect_width=-1,
                            text="Нажаль, боти виявилися\nсильнішими!",
                            font_family="fonts/PressStart2P-Regular.ttf", font_color=(79, 0, 0), font_size=32)
@@ -82,48 +77,8 @@ class Mode:
 
         menus.add_submenu(self.win_menu, self.lose_menu)
 
-    def setup(self):
-        blocks = []
-        x = 0
-        y = 0
-        bot = 0
-
-        def to_run(self):
-            self.game.bot_count -= 1
-            self.remove(self.groups())
-            self.game.tanks_group.remove(self)
-            self.game.label_bot_counter.set_text(f"Bot: {self.game.bot_count}")
-            if self.game.bot_count == 0:
-                self.game.is_finished = True
-                # self.game.finish_menu = self.game.win_menu
-                self.game.menus.run_loop(self.game.game.main_screen, self.game.game.time, "win menu")
-
-        for row in game_map:
-            for item in row:
-                if item == 1:
-                    blocks.append(Block((self.camera_group, self.player_obstacles_group), 1, "images/wall.png", x, y))
-                elif item == 2:
-                    blocks.append(Block((self.camera_group, self.player_obstacles_group), 2, "images/wall1.png", x, y))
-                elif item == 0 or item == 7:
-                    # blocks.append(  Block(0, "", x, y)  )
-                    pass
-                elif item == 8:
-                    tank = TankAutoControl(self, (self.camera_group, self.player_obstacles_group, self.tanks_group),
-                                           self.tank, "images/enemy.png", x, y, 50, random.randint(800, 1700),
-                                           False, 10)
-                    tank.set_onclick(to_run, tank)
-                    bot += 1
-                    self.bullets.append(tank.bullets_flight)
-                else:
-                    print(f"Incorrect value: '{item}'")
-                x += 1
-
-            x = 0
-            y += 1
-
-        self.blocks = blocks
-        print(len(blocks))
-        self.bot_count = bot
+        # load first level
+        self.load_level("1.json")
 
     def create_levels_menu(self):
         levels_menu = Menu("levels menu", background_color)
@@ -143,10 +98,10 @@ class Mode:
         count_on_row = 0
         gap = 85
 
-        for level in levels_path:
+        for level_number, level in enumerate(levels_path, 1):
             level_button.append(ButtonText(x, y, (30, 255, 30), hover_color=hover_color,
                                            border_radius=10, shift_x=20.5, shift_y=3.5,
-                                           text=str(self.last_level_number), on_click=self.load_level, args=(level,),
+                                           text=str(level_number), on_click=self.load_level, args=(level,),
                                            font_family="fonts/FiraCode-Regular.ttf", font_color=(0, 0, 0), font_size=48))
             count_on_row += 1
             if count_on_row == max_count_on_row:
@@ -154,8 +109,6 @@ class Mode:
                 x -= (count_on_row-1) * (width + gap)
             else:
                 x += width + gap
-
-            self.last_level_number += 1
 
         # add item to menu
         levels_menu.add_item(label_levels, *level_button, btn_settings_icon)
@@ -170,6 +123,7 @@ class Mode:
                 data = json.load(file)
             self.setup_level_from_data(data)
         except Exception as e:
+            print("Error:")
             traceback.print_exception(type(e), e, e.__traceback__)
         return "menu exit"
 
@@ -177,8 +131,8 @@ class Mode:
         self.camera_group.empty()
         self.player_obstacles_group.empty()
         self.tanks_group.empty()
-        self.bullets.clear()
         self.blocks.clear()
+        self.bullets.clear()
 
         def to_run(self):
             self.game.is_finished = True
@@ -187,7 +141,7 @@ class Mode:
 
         if data["tanks"]["simple tanks"]:
             self.tank = Tank_Control(self, (self.camera_group, self.tanks_group), self.player_obstacles_group,
-                                     "images/panzer.png", *data["tanks"]["simple tanks"], 5, True, 30)
+                                     "images/panzer.png", *data["tanks"]["simple tanks"][0], 5, True, 30)
         else:
             self.tank = Tank_Control(self, (self.camera_group, self.tanks_group), self.player_obstacles_group,
                                      "images/panzer.png", X_BLOCK_COUNT//2, Y_BLOCK_COUNT//2, 5, True, 30)
@@ -209,7 +163,7 @@ class Mode:
 
         for t_x, t_y in data["tanks"]["auto tanks"]:
             tank = TankAutoControl(self, (self.camera_group, self.player_obstacles_group, self.tanks_group),
-                                   self.tank, "images/enemy.png", t_x, t_y, 50, random.randint(800, 1700),
+                                   self.tank, data["blocks map"], "images/enemy.png", t_x, t_y, 50, random.randint(800, 1700),
                                    False, 10)
             tank.set_onclick(to_run, tank)
             self.bullets.append(tank.bullets_flight)
