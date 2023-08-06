@@ -81,22 +81,25 @@ class Tank(pygame.sprite.Sprite):
         self.on_click = func
         self.on_click_args = args
         self.on_click_kwargs = kwargs
+
+    def reset_bullet(self, bullet):
+        self.bullets_flight.remove(bullet)
+        bullet.remove(bullet.groups())
+        self.bullets.append(bullet)
     
-    def check_collide(self, list_of_enemys_list):
-        for list_of_enemys in list_of_enemys_list:
-            if self.bullets_flight is not list_of_enemys:
-                for enemy in list_of_enemys:
-                    if self.rect.colliderect(enemy.rect):
-                        list_of_enemys.remove(enemy)
-                        enemy.remove(enemy.groups())
+    def check_bullet_collide(self, tanks):
+        for tank in tanks:
+            if self is tank:
+                continue
+            for bullet in tank.bullets_flight:
+                if self.rect.colliderect(bullet.rect):
+                    tank.reset_bullet(bullet)
 
-                        self.old_rect = self.rect.copy()
-                        self.draw_fire()
+                    self.old_rect = self.rect.copy()
+                    self.draw_fire()
 
-                        if self.on_click:
-                            self.on_click(*self.on_click_args, **self.on_click_kwargs)
-
-                        return True
+                    return True
+        return False
 
     def draw_fire(self):
         self.image.blit(self.image_kill, (0, 0))
@@ -117,8 +120,8 @@ class Tank_Control(Tank):
         self.collision_x()
         self.collision_y()
 
-    def check_collide(self, list_of_enemys_list):
-        super().check_collide(list_of_enemys_list)
+    def check_bullet_collide(self, tanks):
+        return super().check_bullet_collide(tanks)
 
     def collision_x(self):
         for sprite in pygame.sprite.spritecollide(self, self.obstracles_group, False):
@@ -163,6 +166,8 @@ class Tank_Control(Tank):
         self.collision_x()
         if keys[pygame.K_TAB] or keys[pygame.K_RCTRL]:
             self.get_bullet()
+        if keys[pygame.K_n]:
+            print(len(self.bullets), len(self.bullets_flight))
 
     def update(self):
         super().update()
@@ -188,8 +193,8 @@ class TankAutoControl(Tank):
         self.can_move = True
         self.move_time = None
 
-    def check_collide(self, list_of_enemys_list):
-        super().check_collide(list_of_enemys_list)
+    def check_bullet_collide(self, tanks):
+        return super().check_bullet_collide(tanks)
 
     def check_can_move(self):
         if self.can_move:

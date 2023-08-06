@@ -23,9 +23,9 @@ class Mode:
         self.camera_group = CameraGroup()
         self.player_obstacles_group = pygame.sprite.Group()
         self.tanks_group = pygame.sprite.Group()
+        self.enemies_group = pygame.sprite.Group()
 
         self.blocks = []
-        self.bullets = []
         self.bot_count = 0
 
         # create pause icon
@@ -131,13 +131,8 @@ class Mode:
         self.camera_group.empty()
         self.player_obstacles_group.empty()
         self.tanks_group.empty()
+        self.enemies_group.empty()
         self.blocks.clear()
-        self.bullets.clear()
-
-        def to_run(self):
-            self.game.is_finished = True
-            # self.game.finish_menu = self.game.lose_menu
-            self.game.menus.run_loop(self.game.game.main_screen, self.game.game.time, "lose menu")
 
         if data["tanks"]["simple tanks"]:
             self.tank = Tank_Control(self, (self.camera_group, self.tanks_group), self.player_obstacles_group,
@@ -146,27 +141,13 @@ class Mode:
             self.tank = Tank_Control(self, (self.camera_group, self.tanks_group), self.player_obstacles_group,
                                      "images/panzer.png", X_BLOCK_COUNT//2, Y_BLOCK_COUNT//2, 5, True, 30)
             data["blocks map"][Y_BLOCK_COUNT//2][X_BLOCK_COUNT//2] = 0
-        self.tank.set_onclick(to_run, self.tank)
-        self.bullets.append(self.tank.bullets_flight)
 
         self.bot_count = 0
 
-        def to_run(self):
-            self.game.bot_count -= 1
-            self.remove(self.groups())
-            self.game.tanks_group.remove(self)
-            self.game.label_bot_counter.set_text(f"Bot: {self.game.bot_count}")
-            if self.game.bot_count == 0:
-                self.game.is_finished = True
-                # self.game.finish_menu = self.game.win_menu
-                self.game.menus.run_loop(self.game.game.main_screen, self.game.game.time, "win menu")
-
         for t_x, t_y in data["tanks"]["auto tanks"]:
-            tank = TankAutoControl(self, (self.camera_group, self.player_obstacles_group, self.tanks_group),
-                                   self.tank, data["blocks map"], "images/enemy.png", t_x, t_y, 50, random.randint(800, 1700),
-                                   False, 10)
-            tank.set_onclick(to_run, tank)
-            self.bullets.append(tank.bullets_flight)
+            TankAutoControl(self, (self.camera_group, self.player_obstacles_group, self.tanks_group, self.enemies_group),
+                            self.tank, data["blocks map"], "images/enemy.png", t_x, t_y, 50, random.randint(800, 1700),
+                            False, 10)
             self.bot_count += 1
 
         self.label_bot_counter.set_text(f"Bot: {self.bot_count}")
@@ -191,6 +172,20 @@ class Mode:
 
         self.is_finished = False
 
+    def get_damage(self):
+        for tank in self.enemies_group:
+            if tank.check_bullet_collide(self.tanks_group):
+                tank.remove(tank.groups())
+                self.bot_count -= 1
+                self.label_bot_counter.set_text(f"Bot: {self.bot_count}")
+                if self.bot_count == 0:
+                    self.is_finished = True
+                    self.menus.run_loop(self.main_screen, self.game.time, "win menu")
+
+        if self.tank.check_bullet_collide(self.tanks_group):
+            self.is_finished = True
+            self.menus.run_loop(self.main_screen, self.game.time, "lose menu")
+
     def restart(self):
         print("restart")
 
@@ -204,7 +199,6 @@ class Mode:
 
         if not self.is_finished:
             self.camera_group.update()
-            for tank in self.tanks_group:
-                tank.check_collide(self.bullets)
+            self.get_damage()
         # else:
         #     self.finish_menu.draw(self.main_screen)
