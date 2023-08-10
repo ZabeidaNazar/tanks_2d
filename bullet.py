@@ -59,29 +59,28 @@ class Bullet(pygame.sprite.Sprite):
             if self.rect.colliderect(block):
                 if self in self.tank.bullets_flight:
                     self.tank.bullets.append(self.tank.bullets_flight.pop(self.tank.bullets_flight.index(self)))
-                    self.remove(self.groups())
+                    self.kill()
                 if block.type_block == 1:
-                    self.tank.game.blocks.remove(block)
                     self.tank.grid[block.y][block.x] = 0
-                    block.remove(block.groups())
+                    block.kill()
 
     def walls_collision(self):
         if self.rect.left < 0:
             self.rect.left = 0
             self.tank.bullets.append(self.tank.bullets_flight.pop(self.tank.bullets_flight.index(self)))
-            self.remove(self.groups())
+            self.kill()
         elif self.rect.right > V_WIDTH:
             self.rect.right = V_WIDTH
             self.tank.bullets.append(self.tank.bullets_flight.pop(self.tank.bullets_flight.index(self)))
-            self.remove(self.groups())
+            self.kill()
         if self.rect.top < 0:
             self.rect.top = 0
             self.tank.bullets.append(self.tank.bullets_flight.pop(self.tank.bullets_flight.index(self)))
-            self.remove(self.groups())
+            self.kill()
         elif self.rect.bottom > V_HEIGHT:
             self.rect.bottom = V_HEIGHT
             self.tank.bullets.append(self.tank.bullets_flight.pop(self.tank.bullets_flight.index(self)))
-            self.remove(self.groups())
+            self.kill()
 
     def update_cord(self):
         self.rect.x = self.tank.rect.x + self.tank.rect.width // 2 - self.rect.width // 2

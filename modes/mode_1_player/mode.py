@@ -234,7 +234,7 @@ class Mode:
     def get_damage(self):
         for tank in self.enemies_group:
             if tank.check_bullet_collide(self.tanks_group):
-                tank.remove(tank.groups())
+                tank.kill()
                 self.bot_count -= 1
                 self.label_bot_counter.set_text(f"Bot: {self.bot_count}")
                 if self.bot_count == 0:
