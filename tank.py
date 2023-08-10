@@ -7,10 +7,12 @@ from bullet import *
 pygame.init()
 
 class Tank(pygame.sprite.Sprite):
-    def __init__(self, game, groups, filename, x, y, speed, type_bullet_pause=True, bullet_count=None,
+    def __init__(self, game, groups, grid, filename, x, y, speed, type_bullet_pause=True, bullet_count=None,
                  bullet_pause=BULLET_PAUSE,
                  on_click=None, args=None, kwargs=None):
         super().__init__(groups) if groups is not None else super().__init__()
+        self.sprite_groups = groups
+        self.grid = grid
         self.z_index = 3
         self.game = game
         self.on_click = on_click
@@ -19,8 +21,8 @@ class Tank(pygame.sprite.Sprite):
         self.image = pygame.transform.scale(pygame.image.load(get_path(filename)).convert_alpha(), (BLOCKSIZE, BLOCKSIZE))
         self.image_kill = pygame.transform.scale(pygame.image.load(get_path("images/kill.png")).convert_alpha(), (BLOCKSIZE, BLOCKSIZE))
         self.rect = self.image.get_rect()
-        self.rect.x = x * BLOCKSIZE
-        self.rect.y = y * BLOCKSIZE
+        self.rect.x = self.start_x = x * BLOCKSIZE
+        self.rect.y = self.start_y = y * BLOCKSIZE
         self.old_rect = self.rect.copy()
         self.speed = speed
         self.angle = 0
@@ -104,16 +106,22 @@ class Tank(pygame.sprite.Sprite):
     def draw_fire(self):
         self.image.blit(self.image_kill, (0, 0))
 
+    def reset(self):
+        if not self.alive():
+            self.add(*self.sprite_groups)
+            self.rect.x = self.start_x
+            self.rect.y = self.start_y
+
     def update(self):
         self.check_can_do_bullet()
         
 
 
 class Tank_Control(Tank):
-    def __init__(self, game, groups, obstracles_group, filename, x, y, speed, type_bullet_pause=True, bullet_count=None,
+    def __init__(self, game, groups, grid, obstracles_group, filename, x, y, speed, type_bullet_pause=True, bullet_count=None,
                  bullet_pause=BULLET_PAUSE,
                  on_click=None, args=None, kwargs=None):
-        super().__init__(game, groups, filename, x, y, speed, type_bullet_pause, bullet_count, bullet_pause,
+        super().__init__(game, groups, grid, filename, x, y, speed, type_bullet_pause, bullet_count, bullet_pause,
                          on_click, args, kwargs)
         self.obstracles_group = obstracles_group
 
@@ -178,9 +186,8 @@ class Tank_Control(Tank):
 class TankAutoControl(Tank):
     def __init__(self, game, groups, enemy, grid, filename, x, y, speed, move_pause, type_bullet_pause=False, bullet_count=None, bullet_pause=BULLET_PAUSE,
                  on_click=None, args=None, kwargs=None):
-        super().__init__(game, groups, filename, x, y, speed, type_bullet_pause, bullet_count, bullet_pause,
+        super().__init__(game, groups, grid, filename, x, y, speed, type_bullet_pause, bullet_count, bullet_pause,
                          on_click, args, kwargs)
-        self.grid = grid
         self.ways = (-1, 0), (0, -1), (1, 0), (0, 1)
         self.path = None
         self.enemy_x = 0
@@ -324,6 +331,11 @@ class TankAutoControl(Tank):
 
         # if self.our_x == self.enemy_x or self.our_y == self.enemy_y:
         #     self.get_bullet()
+
+    def reset(self):
+        super().reset()
+        if self.path:
+            self.path.clear()
 
     def update(self):
         if self.can_move:

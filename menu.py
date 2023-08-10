@@ -276,19 +276,4 @@ btn_back = ButtonText(WIDTH // 2, 530, (30, 255, 30), "Назад", font_color=(
 btn_back.set_onclick(lambda: "menu")
 settings_m.add_item(sett_game_info, btn_back)
 
-pause_m = Menu("pause", None)
-# Створення елементів, які будуть відображатися в меню паузи
-btn_play = ButtonIcon("images\\play_30_30.png", WIDTH - 30 - 5, 5, 30, 30, on_click=None)
-btn_play.set_onclick(lambda: "menu exit")
-btn_continue = ButtonText(WIDTH // 2, 100, (30, 255, 30), "Продовжити", font_color=(20, 20, 255), font_size=40,
-                          border_radius=10, hover_color=hover_color, center=True)
-btn_continue.set_onclick(lambda: "menu exit")
-btn_restart = ButtonText(WIDTH // 2, 260, (30, 255, 30), "Почати заново", font_color=(20, 20, 255), font_size=40,
-                         border_radius=10, hover_color=hover_color, center=True)
-btn_restart.set_onclick(lambda: "menu exit")
-btn_menu = ButtonText(WIDTH // 2, 420, (30, 255, 30), "Головне меню", font_color=(20, 20, 255), font_size=40,
-                      border_radius=10, hover_color=hover_color, center=True)
-btn_menu.set_onclick(lambda: "menu")
-pause_m.add_item(btn_play, btn_continue, btn_restart, btn_menu)
-
-menus = Menus("menu", main_m, settings_m, pause_m)
+menus = Menus("menu", main_m, settings_m)

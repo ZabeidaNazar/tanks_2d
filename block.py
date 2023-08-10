@@ -4,8 +4,10 @@ from game_map import *
 
 
 class Block(pygame.sprite.Sprite):
-    def __init__(self, groups, type_block, image, x, y, color=(0, 100, 0, 0.5)):
+    def __init__(self, groups, grid, type_block, image, x, y, color=(0, 100, 0, 0.5)):
         super().__init__(groups) if groups is not None else super().__init__()
+        self.sprite_groups = groups
+        self.grid = grid
         self.z_index = 1
         if not image:
             self.image = pygame.Surface((BLOCKSIZE, BLOCKSIZE))
@@ -34,6 +36,11 @@ class Block(pygame.sprite.Sprite):
     # def __setstate__(self, state):
     #     surface_str = state
     #     self.image = pygame.image.fromstring(surface_str, "RGBA")
+
+    def reset(self):
+        if not self.alive():
+            self.add(*self.sprite_groups)
+            self.grid[self.y][self.x] = self.type_block
 
     def __str__(self):
         return f"{self.x=}, {self.y=}"

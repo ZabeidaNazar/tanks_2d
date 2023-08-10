@@ -62,7 +62,7 @@ class Bullet(pygame.sprite.Sprite):
                     self.remove(self.groups())
                 if block.type_block == 1:
                     self.tank.game.blocks.remove(block)
-                    game_map[block.y][block.x] = 0
+                    self.tank.grid[block.y][block.x] = 0
                     block.remove(block.groups())
 
     def walls_collision(self):

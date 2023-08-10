@@ -24,8 +24,10 @@ class Mode:
         self.player_obstacles_group = pygame.sprite.Group()
         self.tanks_group = pygame.sprite.Group()
         self.enemies_group = pygame.sprite.Group()
+        self.blocks = pygame.sprite.Group()
 
-        self.blocks = []
+        self.levels_cache = {}
+        self.last_level = None
         self.bot_count = 0
 
         # create pause icon
@@ -37,6 +39,9 @@ class Mode:
 
         # levels menu
         self.create_levels_menu()
+
+        # create pause menu
+        self.create_pause_menu()
 
         # finish level flag
         self.is_finished = False
@@ -116,39 +121,70 @@ class Mode:
         # add menu to main menu
         menus.add_submenu(levels_menu)
 
+    def create_pause_menu(self):
+        # create menu with transparent background
+        pause_menu = Menu("pause", None)
+
+        # Створення елементів, які будуть відображатися в меню паузи
+        btn_play = ButtonIcon("images\\play_30_30.png", WIDTH - 30 - 5, 5, 30, 30, on_click=None)
+        btn_play.set_onclick(lambda: "menu exit")
+        btn_continue = ButtonText(WIDTH // 2, 100, (30, 255, 30), "Продовжити", font_color=(20, 20, 255), font_size=40,
+                                  border_radius=10, hover_color=hover_color, center=True)
+        btn_continue.set_onclick(lambda: "menu exit")
+        btn_restart = ButtonText(WIDTH // 2, 260, (30, 255, 30), "Почати заново", font_color=(20, 20, 255),
+                                 font_size=40,
+                                 border_radius=10, hover_color=hover_color, center=True)
+        btn_restart.set_onclick(self.restart)
+        btn_menu = ButtonText(WIDTH // 2, 420, (30, 255, 30), "Головне меню", font_color=(20, 20, 255), font_size=40,
+                              border_radius=10, hover_color=hover_color, center=True)
+        btn_menu.set_onclick(lambda: "menu")
+
+        # add item to menu
+        pause_menu.add_item(btn_play, btn_continue, btn_restart, btn_menu)
+
+        # add menu to main menu
+        menus.add_submenu(pause_menu)
+
     def load_level(self, level_name):
         assert level_name in os.listdir(get_path("modes/mode_1_player/levels"))
-        try:
-            with open(get_path(f"modes/mode_1_player/levels/{level_name}"), "r") as file:
-                data = json.load(file)
-            self.setup_level_from_data(data)
-        except Exception as e:
-            print("Error:")
-            traceback.print_exception(type(e), e, e.__traceback__)
+        if level_name not in self.levels_cache:
+            try:
+                with open(get_path(f"modes/mode_1_player/levels/{level_name}"), "r") as file:
+                    data = json.load(file)
+                self.setup_level_from_data(data, level_name)
+            except Exception as e:
+                print("Error:")
+                traceback.print_exception(type(e), e, e.__traceback__)
+        else:
+            self.setup_level_from_cache(level_name)
         return "menu exit"
 
-    def setup_level_from_data(self, data):
+    def setup_level_from_data(self, data, level_name):
         self.camera_group.empty()
         self.player_obstacles_group.empty()
         self.tanks_group.empty()
         self.enemies_group.empty()
-        self.blocks.clear()
+        self.blocks.empty()
+
+        cache = []
 
         if data["tanks"]["simple tanks"]:
-            self.tank = Tank_Control(self, (self.camera_group, self.tanks_group), self.player_obstacles_group,
+            self.tank = Tank_Control(self, (self.camera_group, self.tanks_group), data["blocks map"], self.player_obstacles_group,
                                      "images/panzer.png", *data["tanks"]["simple tanks"][0], 5, True, 30)
         else:
-            self.tank = Tank_Control(self, (self.camera_group, self.tanks_group), self.player_obstacles_group,
+            self.tank = Tank_Control(self, (self.camera_group, self.tanks_group), data["blocks map"], self.player_obstacles_group,
                                      "images/panzer.png", X_BLOCK_COUNT//2, Y_BLOCK_COUNT//2, 5, True, 30)
             data["blocks map"][Y_BLOCK_COUNT//2][X_BLOCK_COUNT//2] = 0
+        cache.append(self.tank)
 
         self.bot_count = 0
 
         for t_x, t_y in data["tanks"]["auto tanks"]:
-            TankAutoControl(self, (self.camera_group, self.player_obstacles_group, self.tanks_group, self.enemies_group),
-                            self.tank, data["blocks map"], "images/enemy.png", t_x, t_y, 50, random.randint(800, 1700),
-                            False, 10)
+            tank = TankAutoControl(self, (self.camera_group, self.player_obstacles_group, self.tanks_group, self.enemies_group),
+                                   self.tank, data["blocks map"], "images/enemy.png", t_x, t_y, 50, random.randint(500, 900),
+                                   False, 10)
             self.bot_count += 1
+            cache.append(tank)
 
         self.label_bot_counter.set_text(f"Bot: {self.bot_count}")
 
@@ -158,9 +194,11 @@ class Mode:
         for row in data["blocks map"]:
             for item in row:
                 if item == 1:
-                    self.blocks.append(Block((self.camera_group, self.player_obstacles_group), 1, "images/wall.png", x, y))
+                    block = Block((self.camera_group, self.player_obstacles_group, self.blocks), data["blocks map"], 1, "images/wall.png", x, y)
+                    cache.append(block)
                 elif item == 2:
-                    self.blocks.append(Block((self.camera_group, self.player_obstacles_group), 2, "images/wall1.png", x, y))
+                    block = Block((self.camera_group, self.player_obstacles_group, self.blocks), data["blocks map"], 2, "images/wall1.png", x, y)
+                    cache.append(block)
                 elif item == 0:
                     pass
                 else:
@@ -169,6 +207,27 @@ class Mode:
 
             x = 0
             y += 1
+
+        self.levels_cache[level_name] = cache
+        self.last_level = level_name
+
+        self.is_finished = False
+
+    def setup_level_from_cache(self, level_name):
+        cache = self.levels_cache[level_name]
+
+        self.camera_group.empty()
+        self.player_obstacles_group.empty()
+        self.tanks_group.empty()
+        self.enemies_group.empty()
+        self.blocks.empty()
+
+        print("reset")
+
+        for element in cache:
+            element.reset()
+
+        self.last_level = level_name
 
         self.is_finished = False
 
@@ -187,7 +246,8 @@ class Mode:
             self.menus.run_loop(self.main_screen, self.game.time, "lose menu")
 
     def restart(self):
-        print("restart")
+        self.setup_level_from_cache(self.last_level)
+        return "menu exit"
 
     def run(self):
         self.main_screen.fill((30, 30, 255))
