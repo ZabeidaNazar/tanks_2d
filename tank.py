@@ -98,7 +98,6 @@ class Tank(pygame.sprite.Sprite):
                     tank.reset_bullet(bullet)
 
                     self.old_rect = self.rect.copy()
-                    self.draw_fire()
 
                     return True
         return False
