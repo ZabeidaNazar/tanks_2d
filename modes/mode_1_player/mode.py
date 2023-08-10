@@ -3,7 +3,7 @@ import random
 import time
 import traceback
 
-from menu import pause_loop, menus, Menu, Menus, ButtonIcon, ButtonText, Label, btn_settings_icon, Area, Picture
+from menu import menus, Menu, Menus, ButtonIcon, ButtonText, Label, btn_settings_icon, Area, Picture, TransparentRect, ImageOfDisplay
 from settings import *
 from block import *
 from tank import *
@@ -32,7 +32,7 @@ class Mode:
 
         # create pause icon
         self.btn_pause = ButtonIcon(get_path("images\\pause_30_30.png"), WIDTH - 30 - 5, 5, 30, 30)
-        self.btn_pause.set_onclick(menus.run_loop, self.main_screen, self.game.time, "pause")
+        self.btn_pause.set_onclick(self.run_pause)
 
         # create label for count of bot
         self.label_bot_counter = Label(10, 10, f"Bot: {self.bot_count}", rect_width=-1)
@@ -58,20 +58,20 @@ class Mode:
 
         # create win menu
         self.win_menu = Menu("win menu", None)
-        label_win = Label(WIDTH / 2, 35, center_x=True, rect_width=-1,
+        label_win = Label(WIDTH / 2, 45, center_x=True, rect_width=-1, line_space=20,
                           text="Вам вдалося! Ви здолали\nатаку ботів",
                           font_family="fonts/PressStart2P-Regular.ttf", font_color=(2, 79, 0), font_size=32)
         picture_win = Picture(get_path("images/pass.png"), 260, 215, 350, 350)
         btn_next_level = ButtonText(750, 190, (30, 255, 30), border_radius=10, hover_color=hover_color,
-                                    text="Далі", on_click=lambda: "menu exit",
+                                    text="Далі", on_click=self.next_level,
                                     font_family="fonts/FiraCode-Regular.ttf", font_color=(20, 20, 255), font_size=40)
         self.win_menu.add_item(menu_background, label_win, picture_win,
                                btn_next_level, btn_levels, btn_main_menu, btn_settings_icon)
 
         # create lose menu
         self.lose_menu = Menu("lose menu", None)
-        label_lose = Label(WIDTH / 2, 35, center_x=True, rect_width=-1,
-                           text="Нажаль, боти виявилися\nсильнішими!",
+        label_lose = Label(WIDTH / 2, 45, center_x=True, rect_width=-1, line_space=20,
+                           text="На жаль, боти виявилися\nсильнішими!",
                            font_family="fonts/PressStart2P-Regular.ttf", font_color=(79, 0, 0), font_size=32)
         picture_lose = Picture(get_path("images/fail.png"), 260, 215, 350, 350)
         btn_restart = ButtonText(726, 190, (30, 255, 30), border_radius=10, hover_color=hover_color,
@@ -85,6 +85,29 @@ class Mode:
         # load first level
         self.load_level("1.json")
 
+    def run_pause(self):
+        self.last_surf.copy()
+        menus.run_loop(self.main_screen, self.game.time, "pause")
+
+    def get_user_data(self):
+        try:
+            with open(get_path("user_data/data.json"), "r", encoding="utf-8") as file:
+                data = json.load(file)
+            return data
+        except Exception as e:
+            print("Error:")
+            traceback.print_exception(type(e), e, e.__traceback__)
+            exit()
+
+    def change_user_data(self, data):
+        try:
+            with open(get_path("user_data/data.json"), "w", encoding="utf-8") as file:
+                json.dump(data, file, indent=4, ensure_ascii=False)
+        except Exception as e:
+            print("Error:")
+            traceback.print_exception(type(e), e, e.__traceback__)
+            exit()
+
     def create_levels_menu(self):
         levels_menu = Menu("levels menu", background_color)
         label_levels = Label(WIDTH / 2, 55, center_x=True, rect_width=-1,
@@ -92,6 +115,8 @@ class Mode:
                              font_family="fonts/PressStart2P-Regular.ttf", font_color=(0, 0, 0), font_size=48)
 
         levels_path = os.listdir("modes/mode_1_player/levels")
+        user_data = self.get_user_data()
+        completed_level = len(user_data["modes"]["1 player"]["levels"])
 
         # create level buttons
         level_button = []
@@ -104,10 +129,23 @@ class Mode:
         gap = 85
 
         for level_number, level in enumerate(levels_path, 1):
-            level_button.append(ButtonText(x, y, (30, 255, 30), hover_color=hover_color,
-                                           border_radius=10, shift_x=20.5, shift_y=3.5,
-                                           text=str(level_number), on_click=self.load_level, args=(level,),
-                                           font_family="fonts/FiraCode-Regular.ttf", font_color=(0, 0, 0), font_size=48))
+            if level_number <= completed_level:
+                level_button.append(ButtonText(x, y, COMPLETED_BTN_COLOR, hover_color=COMPLETED_BTN_HOVER_COLOR,
+                                               border_radius=10, shift_x=20.5, shift_y=3.5,
+                                               text=str(level_number), on_click=self.load_level, args=(level,),
+                                               font_family="fonts/FiraCode-Regular.ttf", font_color=(0, 0, 0), font_size=48))
+            elif completed_level < level_number <= completed_level + 2:
+                level_button.append(ButtonText(x, y, UNLOCK_BTN_COLOR, hover_color=UNLOCK_BTN_HOVER_COLOR,
+                                               border_radius=10, shift_x=20.5, shift_y=3.5,
+                                               text=str(level_number), on_click=self.load_level, args=(level,),
+                                               font_family="fonts/FiraCode-Regular.ttf", font_color=(0, 0, 0),
+                                               font_size=48))
+            else:
+                level_button.append(ButtonText(x, y, LOCK_BTN_COLOR, hover_color=LOCK_BTN_HOVER_COLOR,
+                                               border_radius=10, shift_x=20.5, shift_y=3.5,
+                                               text=str(level_number),
+                                               font_family="fonts/FiraCode-Regular.ttf", font_color=(0, 0, 0),
+                                               font_size=48))
             count_on_row += 1
             if count_on_row == max_count_on_row:
                 y += height + gap
@@ -115,32 +153,54 @@ class Mode:
             else:
                 x += width + gap
 
+        # save level buttons
+        self.level_button = level_button
+
         # add item to menu
         levels_menu.add_item(label_levels, *level_button, btn_settings_icon)
 
         # add menu to main menu
         menus.add_submenu(levels_menu)
 
+    def next_level(self):
+        levels_path = os.listdir("modes/mode_1_player/levels")
+        user_data = self.get_user_data()
+        completed_level = len(user_data["modes"]["1 player"]["levels"])
+        if len(levels_path) > completed_level:
+            self.load_level(levels_path[completed_level+1])
+        return "menu exit"
+
     def create_pause_menu(self):
         # create menu with transparent background
         pause_menu = Menu("pause", None)
 
         # Створення елементів, які будуть відображатися в меню паузи
+        self.last_surf = ImageOfDisplay(0, 0, WIDTH, HEIGHT)
+        transparent_rect = TransparentRect(0, 0, WIDTH, HEIGHT, (0, 0, 0, 90))
+        label_pause = Label(WIDTH//2, 30, rect_width=-1, center_x=True,
+                            text="Пауза",
+                            font_family="fonts/PressStart2P-Regular.ttf", font_color=(0, 0, 0), font_size=48)
         btn_play = ButtonIcon("images\\play_30_30.png", WIDTH - 30 - 5, 5, 30, 30, on_click=None)
         btn_play.set_onclick(lambda: "menu exit")
-        btn_continue = ButtonText(WIDTH // 2, 100, (30, 255, 30), "Продовжити", font_color=(20, 20, 255), font_size=40,
-                                  border_radius=10, hover_color=hover_color, center=True)
+        btn_continue = ButtonText(WIDTH // 2, 140, (30, 255, 30), "Продовжити", font_color=(20, 20, 255), font_size=40,
+                                  border_radius=10, hover_color=hover_color, center_x=True)
         btn_continue.set_onclick(lambda: "menu exit")
-        btn_restart = ButtonText(WIDTH // 2, 260, (30, 255, 30), "Почати заново", font_color=(20, 20, 255),
+        btn_restart = ButtonText(WIDTH // 2, 282, (30, 255, 30), "Заново", font_color=(20, 20, 255),
                                  font_size=40,
-                                 border_radius=10, hover_color=hover_color, center=True)
+                                 border_radius=10, hover_color=hover_color, center_x=True)
         btn_restart.set_onclick(self.restart)
-        btn_menu = ButtonText(WIDTH // 2, 420, (30, 255, 30), "Головне меню", font_color=(20, 20, 255), font_size=40,
-                              border_radius=10, hover_color=hover_color, center=True)
+        btn_levels = ButtonText(WIDTH // 2, 424, (30, 255, 30), "Рівні", font_color=(20, 20, 255),
+                                font_size=40,
+                                border_radius=10, hover_color=hover_color, center_x=True)
+        btn_levels.set_onclick(lambda: "levels menu")
+        btn_menu = ButtonText(WIDTH // 2, 566, (30, 255, 30), "Меню", font_color=(20, 20, 255), font_size=40,
+                              border_radius=10, hover_color=hover_color, center_x=True)
         btn_menu.set_onclick(lambda: "menu")
 
         # add item to menu
-        pause_menu.add_item(btn_play, btn_continue, btn_restart, btn_menu)
+        pause_menu.add_item(self.last_surf, transparent_rect,
+                            label_pause, btn_play,
+                            btn_continue, btn_restart, btn_levels, btn_menu)
 
         # add menu to main menu
         menus.add_submenu(pause_menu)
@@ -238,6 +298,12 @@ class Mode:
                 self.bot_count -= 1
                 self.label_bot_counter.set_text(f"Bot: {self.bot_count}")
                 if self.bot_count == 0:
+                    data = self.get_user_data()
+                    data["modes"]["1 player"]["levels"][self.last_level] = "completed"
+                    self.change_user_data(data)
+                    button = self.level_button[os.listdir("modes/mode_1_player/levels").index(self.last_level)]
+                    button.set_hover_color(COMPLETED_BTN_HOVER_COLOR)
+                    button.set_bg_color(COMPLETED_BTN_COLOR)
                     self.is_finished = True
                     self.menus.run_loop(self.main_screen, self.game.time, "win menu")
 

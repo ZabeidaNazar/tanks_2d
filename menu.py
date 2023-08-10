@@ -1,115 +1,6 @@
 import pygame
 from settings import *
-from base import ButtonText, ButtonIcon, Label, Area, Picture
-
-# створення кнопок меню
-btn_start = ButtonText(WIDTH // 2, 100, (30, 255, 30), "Старт", font_color=(20, 20, 255), font_size=40,
-                       border_radius=10,
-                       hover_color=hover_color, center=True)
-btn_settings = ButtonText(WIDTH // 2, 260, (30, 255, 30), "Налаштування", font_color=(20, 20, 255), font_size=40,
-                          border_radius=10, hover_color=hover_color, center=True)
-btn_exit = ButtonText(WIDTH // 2, 420, (30, 255, 30), "Вихід", font_color=(20, 20, 255), font_size=40, border_radius=10,
-                      hover_color=hover_color, center=True)
-btn_back = ButtonText(WIDTH // 2, 530, (30, 255, 30), "Назад", font_color=(20, 20, 255), font_size=40, border_radius=10,
-                      hover_color=hover_color, center=True)
-
-# Створення елементів налаштувань
-sett_game_info = Label(0, 0, about_game, bg_color=(100, 180, 180), shift_x=20, shift_y=20, line_space=0, width=1000)
-
-# Створення елементів, які будуть відображатися в меню паузи
-btn_play = ButtonIcon("images\\play_30_30.png", WIDTH - 30 - 5, 5, 30, 30, on_click=None)
-btn_continue = ButtonText(WIDTH // 2, 100, (30, 255, 30), "Продовжити", font_color=(20, 20, 255), font_size=40,
-                          border_radius=10, hover_color=hover_color, center=True)
-
-btn_restart = ButtonText(WIDTH // 2, 260, (30, 255, 30), "Почати заново", font_color=(20, 20, 255), font_size=40,
-                         border_radius=10, hover_color=hover_color, center=True)
-btn_menu = ButtonText(WIDTH // 2, 420, (30, 255, 30), "Головне меню", font_color=(20, 20, 255), font_size=40,
-                      border_radius=10, hover_color=hover_color, center=True)
-
-
-def main_menu(window, clock, screen, back=background_color):
-    run = True
-    pygame.display.set_caption(f"{window_title} - Меню")
-    while run:
-
-        window.fill(back)
-
-        if screen == "menu":
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
-                elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                    if btn_start.check_collide(event.pos):
-                        pygame.display.set_caption(window_title)
-                        return "restart"
-                    elif btn_settings.check_collide(event.pos):
-                        screen = "settings"
-                        pygame.display.set_caption(f"{window_title} - Налаштування")
-                    elif btn_exit.check_collide(event.pos):
-                        exit()
-                elif event.type == pygame.MOUSEMOTION:
-                    btn_start.hover(event.pos)
-                    btn_settings.hover(event.pos)
-                    btn_exit.hover(event.pos)
-
-            btn_start.draw(window)
-            btn_settings.draw(window)
-            btn_exit.draw(window)
-
-        elif screen == "settings":
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    pygame.quit()
-                    exit()
-                elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                    if btn_back.check_collide(event.pos):
-                        screen = "menu"
-                        pygame.display.set_caption(f"{window_title} - Меню")
-                elif event.type == pygame.MOUSEMOTION:
-                    btn_back.hover(event.pos)
-
-            btn_back.draw(window)
-            sett_game_info.draw(window)
-
-        pygame.display.update()
-        clock.tick(menu_fps)
-
-
-def pause_loop(window, clock):
-    pygame.display.set_caption(f"{window_title} - Пауза")
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                exit()
-            elif event.type == pygame.MOUSEBUTTONUP and event.button == 1:
-                # if btn_play.check_collide(event.pos) or btn_continue.check_collide(event.pos):
-                #     pygame.display.set_caption(window_title)
-                #     return
-                if btn_restart.check_collide(event.pos):
-                    pygame.display.set_caption(window_title)
-                    return "restart"
-                elif btn_menu.check_collide(event.pos):
-                    pygame.display.set_caption(window_title)
-                    return main_menu(window, clock, "menu")
-            elif event.type == pygame.MOUSEMOTION:
-                btn_continue.hover(event.pos)
-                btn_restart.hover(event.pos)
-                btn_menu.hover(event.pos)
-            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                pygame.display.set_caption(window_title)
-                return
-
-        # window.fill(back)
-
-        btn_play.draw(window)
-        btn_play.draw(window)
-        btn_continue.draw(window)
-        btn_restart.draw(window)
-        btn_menu.draw(window)
-
-        pygame.display.update()
-        clock.tick(menu_fps)
+from base import ButtonText, ButtonIcon, Label, Area, Picture, TransparentRect, ImageOfDisplay
 
 
 class Menu:
@@ -272,7 +163,7 @@ settings_m = Menu("settings", bg_color)
 # Створення елементів налаштувань
 sett_game_info = Label(0, 0, about_game, bg_color=(100, 180, 180), shift_x=20, shift_y=20, line_space=0, width=1000)
 btn_back = ButtonText(WIDTH // 2, 530, (30, 255, 30), "Назад", font_color=(20, 20, 255), font_size=40, border_radius=10,
-                      hover_color=hover_color, center=True)
+                      hover_color=hover_color, center_x=True)
 btn_back.set_onclick(lambda: "menu")
 settings_m.add_item(sett_game_info, btn_back)
 

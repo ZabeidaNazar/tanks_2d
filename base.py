@@ -23,6 +23,36 @@ class Area:
         pygame.draw.rect(window, frame_color, self.rect, thickness)
 
 
+class TransparentRect:
+    def __init__(self, x, y, width, height, color=(0, 0, 0, 50), border_radius=-1):
+        self.image = pygame.Surface((width, height), pygame.SRCALPHA)
+        self.rect = pygame.Rect(x, y, width, height)
+
+        self.rounded_rect = self.rect.copy()
+        self.border_radius = border_radius
+        self.fill_color = color
+
+        pygame.draw.rect(self.image, self.fill_color, self.rounded_rect, border_radius=border_radius)
+
+    def color(self, new_color):
+        self.fill_color = new_color
+
+    def draw(self, window):
+        window.blit(self.image, self.rect)
+
+
+class ImageOfDisplay:
+    def __init__(self, x, y, width, height):
+        self.image = pygame.display.get_surface().copy()
+        self.rect = pygame.Rect(x, y, width, height)
+
+    def copy(self):
+        self.image = pygame.display.get_surface().copy()
+
+    def draw(self, window):
+        window.blit(self.image, self.rect)
+
+
 class Picture(Area):
 
     def __init__(self, filename, x, y, width, height, color=None):
@@ -244,7 +274,7 @@ class Button:
 class ButtonText:
     def __init__(self, x, y, bg_color, text, font_family="verdana", font_size=20, font_color=(10, 10, 10), shift_x=40,
                  shift_y=20, border_radius=-1, hover_color=(200, 200, 200), transition=20,
-                 on_click=lambda: print("click"), args=None, kwargs=None, center=False):
+                 on_click=lambda: print("click"), args=None, kwargs=None, center_x=False, center_y=False):
 
         self.on_click = on_click
         self.on_click_args = args if args else ()
@@ -267,11 +297,14 @@ class ButtonText:
 
         self.image.blit(self.rendered_text, (shift_x, shift_y))
 
-        if center:
+        if center_x:
             self.rect.x = x - self.image.get_width() // 2
-            self.rect.y = y - self.image.get_height() // 2
         else:
             self.rect.x = x
+
+        if center_y:
+            self.rect.y = y - self.image.get_height() // 2
+        else:
             self.rect.y = y
 
         self.shift_x = shift_x
@@ -290,6 +323,10 @@ class ButtonText:
 
     def set_hover_color(self, hover_color):
         self.hover_color = hover_color
+
+    def set_bg_color(self, bg_color):
+        self.bg_color = bg_color
+        self.redraw()
 
     def hover(self, pos):
         if self.check_collide(pos):
@@ -325,6 +362,15 @@ class ButtonText:
     def check_click_using_event(self, pos):
         if self.check_collide(pos):
             return self.on_click(*self.on_click_args, **self.on_click_kwargs)
+
+    def redraw(self):
+        self.image = pygame.Surface(
+            (self.rendered_text.get_width() + self.shift_x * 2, self.rendered_text.get_height() + self.shift_y * 2),
+            pygame.SRCALPHA)
+
+        pygame.draw.rect(self.image, self.bg_color, self.colored_rect, border_radius=self.border_radius)
+
+        self.image.blit(self.rendered_text, (self.shift_x, self.shift_y))
 
     def draw(self, window):
         window.blit(self.image, (self.rect.x, self.rect.y))
