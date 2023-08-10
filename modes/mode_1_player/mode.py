@@ -268,21 +268,26 @@ class Mode:
             x = 0
             y += 1
 
-        self.levels_cache[level_name] = cache
+        self.levels_cache[level_name] = {
+            "bots": self.bot_count,
+            "elements": cache
+        }
         self.last_level = level_name
 
         self.is_finished = False
 
     def setup_level_from_cache(self, level_name):
-        cache = self.levels_cache[level_name]
+        cache = self.levels_cache[level_name]["elements"]
+
+        # reset bots counter
+        self.bot_count = self.levels_cache[level_name]["bots"]
+        self.label_bot_counter.set_text(f"Bot: {self.bot_count}")
 
         self.camera_group.empty()
         self.player_obstacles_group.empty()
         self.tanks_group.empty()
         self.enemies_group.empty()
         self.blocks.empty()
-
-        print("reset")
 
         for element in cache:
             element.reset()
