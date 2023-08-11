@@ -88,6 +88,11 @@ class Tank(pygame.sprite.Sprite):
         self.bullets_flight.remove(bullet)
         bullet.kill()
         self.bullets.append(bullet)
+
+    def reset_all_bullet(self):
+        for bullet in self.bullets_flight.copy():
+            self.bullets_flight.remove(bullet)
+            self.bullets.append(bullet)
     
     def check_bullet_collide(self, tanks):
         for tank in tanks:
@@ -110,6 +115,7 @@ class Tank(pygame.sprite.Sprite):
             self.add(*self.sprite_groups)
             self.rect.x = self.start_x
             self.rect.y = self.start_y
+            self.reset_all_bullet()
 
     def update(self):
         self.check_can_do_bullet()
