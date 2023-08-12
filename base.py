@@ -417,6 +417,75 @@ class ProgressBar:
 
 
 class ButtonWithImage:
-    def __init__(self, surf, x, y, width, height, color=None, on_click=lambda: None,
-                 args=None, kwargs=None):
-        pass
+    def __init__(self, x, y, width, height, filename, img_width, img_height, bg_color=(0, 0, 0),
+                 active_color=(255, 255, 255),
+                 on_click=lambda: None, args=None, kwargs=None):
+        # setup button
+        self.width = width
+        self.height = height
+        self.bg_color = bg_color
+        self.image = pygame.Surface((width, height))
+        self.image.fill(bg_color)
+
+        self.rect = self.image.get_rect(topleft=(x, y))
+        self.additional_rect = self.image.get_rect()
+
+        self.image_on_button = pygame.transform.scale(pygame.image.load(get_path(filename)), (img_width, img_height))
+        self.image_on_button_rect = self.image_on_button.get_rect(center=(self.rect.width / 2, self.rect.height / 2))
+
+        self.image.blit(self.image_on_button, self.image_on_button_rect)
+
+        # setup on click function
+        self.on_click = on_click
+        self.on_click_args = args if args else ()
+        self.on_click_kwargs = kwargs if kwargs else {}
+
+        # setup click
+        self.mouse_down = False
+
+        # setup effects
+        self.active_color = active_color
+        self.active = False
+
+    def set_onclick(self, func, *args, **kwargs):
+        self.on_click = func
+        self.on_click_args = args
+        self.on_click_kwargs = kwargs
+
+    def check_click(self):
+        if pygame.mouse.get_pressed()[0]:
+            if not self.mouse_down:
+                if self.check_collide(pygame.mouse.get_pos()):
+                    self.mouse_down = True
+        elif self.mouse_down:
+            if self.check_collide(pygame.mouse.get_pos()):
+                self.on_click(*self.on_click_args, **self.on_click_kwargs)
+            self.mouse_down = False
+
+    def check_click_using_event(self, pos):
+        if self.check_collide(pos):
+            return True, self.on_click(*self.on_click_args, **self.on_click_kwargs)
+        return False
+
+    def check_collide(self, pos):
+        return self.rect.collidepoint(*pos)
+
+    def activated(self):
+        if not self.active:
+            self.active = True
+            # pygame.draw.rect(self.image, self.active_color, self.additional_rect.inflate(4, 4), 5, 4)
+
+    def dis_activated(self):
+        if self.active:
+            self.active = False
+            self.inset_draw()
+
+    def inset_draw(self):
+        self.image = pygame.Surface((self.width, self.height))
+        self.image.fill(self.bg_color)
+        self.image.blit(self.image_on_button, self.image_on_button_rect)
+
+    def draw(self, window):
+        window.blit(self.image, self.rect)
+        if self.active:
+            pygame.draw.rect(window, self.active_color, self.rect.inflate(6, 6), 3, 5)

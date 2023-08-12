@@ -10,12 +10,11 @@ class Menu:
 
         self.element_type = {
             "hover": [item for item in items if hasattr(item, "hover")],
-            "check_click_using_event": [item for item in items if hasattr(item, "check_click_using_event")]
+            "check_click_using_event": [item for item in items if hasattr(item, "check_click_using_event")],
+            "activated": [item for item in items if hasattr(item, "activated")],
         }
 
         self.back = background_color
-
-        self.test = pygame.font.Font(get_path("fonts/FiraCode-Regular.ttf"), 24).render("Режим, де ви проти ботів зі штучним", True, (0, 0, 0))
 
     def sorted_item(self, item):
         for t in self.element_type:
@@ -63,6 +62,27 @@ class Menu:
 
             for item in self.items:
                 item.draw(window)
+
+    def draw(self, window):
+        for item in self.items:
+            item.draw(window)
+
+    def update(self, event: pygame.event.Event):
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 1:
+            for pressable_object in self.element_type["check_click_using_event"]:
+                screen = pressable_object.check_click_using_event(event.pos)
+                if screen:
+                    if pressable_object in self.element_type["activated"]:
+                        for activated_object in self.element_type["activated"]:
+                            if activated_object is pressable_object:
+                                continue
+                            activated_object.dis_activated()
+                        pressable_object.activated()
+                        return screen[1]
+                    return screen
+        elif event.type == pygame.MOUSEMOTION:
+            for hoverable_object in self.element_type["hover"]:
+                hoverable_object.hover(event.pos)
 
 
 class FinishLevelMenu(Menu):
