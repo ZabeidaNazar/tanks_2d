@@ -159,25 +159,36 @@ label_mode_1 = Label(510, 140, rect_width=-1,
                      text="Режим, де ви проти ботів зі штучним\nінтелектом",
                      font_family="fonts/RobotoMono-Regular.ttf", font_color=(0, 0, 0), font_size=24)
 # режим двох гравців
-btn_mode_2 = ButtonText(150, 370, (30, 255, 30), border_radius=10, hover_color=hover_color,
+btn_mode_2 = ButtonText(150, 302, (30, 255, 30), border_radius=10, hover_color=hover_color,
                         text="2 гравців", on_click=lambda: "level 2",
                         font_family="fonts/FiraCode-Regular.ttf", font_color=(20, 20, 255), font_size=40)
-label_mode_2 = Label(510, 370, rect_width=-1,
+label_mode_2 = Label(510, 302, rect_width=-1,
                      text="Режим, де ви можете грати з другом на\nодному комп’ютері",
                      font_family="fonts/FiraCode-Regular.ttf", font_color=(0, 0, 0), font_size=24)
 # режим онлайн гри
-btn_mode_online = ButtonText(186, 600, (30, 255, 30), border_radius=10, hover_color=hover_color,
+btn_mode_online = ButtonText(186, 464, (30, 255, 30), border_radius=10, hover_color=hover_color,
                              text="Онлайн", on_click=lambda: "level online",
                              font_family="fonts/FiraCode-Regular.ttf", font_color=(20, 20, 255), font_size=40)
-label_mode_online = Label(510, 600, rect_width=-1,
+label_mode_online = Label(510, 464, rect_width=-1,
                           text="Режим, де ви граєте з іншими онлайн.\nНайцікавіший режим :-)",
+                          font_family="fonts/FiraCode-Regular.ttf", font_color=(0, 0, 0), font_size=24)
+# режим редактора рівнів
+btn_mode_editor = ButtonText(162, 626, (30, 255, 30), border_radius=10, hover_color=hover_color,
+                             text="Редактор", on_click=lambda: "mode editor",
+                             font_family="fonts/FiraCode-Regular.ttf", font_color=(20, 20, 255), font_size=40)
+label_mode_editor = Label(510, 626, rect_width=-1,
+                          text="Режим, де ви можете створювати власні\nрівні",
                           font_family="fonts/FiraCode-Regular.ttf", font_color=(0, 0, 0), font_size=24)
 
 # btn_exit = ButtonText(WIDTH // 2, 580, (30, 255, 30), "Вихід", font_color=(20, 20, 255), font_size=40, border_radius=10,
 #                       hover_color=hover_color, center=True)
 # btn_exit.onclick(lambda: "game exit")
 
-main_m.add_item(label_name, btn_settings_icon, btn_mode_1, label_mode_1, btn_mode_2, label_mode_2, btn_mode_online, label_mode_online)
+main_m.add_item(label_name, btn_settings_icon,
+                btn_mode_1, label_mode_1,
+                btn_mode_2, label_mode_2,
+                btn_mode_online, label_mode_online,
+                btn_mode_editor, label_mode_editor)
 
 settings_m = Menu("settings", bg_color)
 # Створення елементів налаштувань

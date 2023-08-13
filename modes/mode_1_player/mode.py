@@ -20,7 +20,7 @@ class Mode:
         self.main_screen = pygame.display.get_surface()
 
         # create game elements
-        self.camera_group = CameraGroup()
+        self.camera_group = CameraGroup(target="player")
         self.player_obstacles_group = pygame.sprite.Group()
         self.tanks_group = pygame.sprite.Group()
         self.enemies_group = pygame.sprite.Group()
@@ -322,7 +322,7 @@ class Mode:
 
     def run(self):
         self.main_screen.fill((30, 30, 255))
-        self.camera_group.drawing(self.tank)
+        self.camera_group.drawing(self.camera_group, self.tank)
 
         self.label_bot_counter.draw(self.main_screen)
         self.btn_pause.check_click()

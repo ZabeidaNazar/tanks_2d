@@ -5,6 +5,7 @@ import menu
 from loading_screen import LoadingScreen
 from settings import *
 from modes.mode_1_player.mode import Mode as Mode1
+from editor import MapBuilder as ModeEditor
 
 pygame.init()
 pygame.display.set_caption(window_title)
@@ -20,6 +21,7 @@ class Game:
         self.loaded_modes = {}
 
         menu.btn_mode_1.set_onclick(self.change_mode, "mode 1")
+        menu.btn_mode_editor.set_onclick(self.change_mode, "mode editor")
 
         self.loading_screen = LoadingScreen(self)
         # self.level = Levels_simple.Level(self.time)
@@ -34,7 +36,10 @@ class Game:
     def change_mode(self, name):
         if name not in self.loaded_modes:
             self.run_loading_screen()
-            mode = Mode1(self)
+            if name == "mode 1":
+                mode = Mode1(self)
+            elif name == "mode editor":
+                mode = ModeEditor()
             self.loaded_modes[name] = mode
             self.current_mode = mode
             self.stop_loading_screen()

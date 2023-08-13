@@ -22,13 +22,13 @@ class CameraGroup(pygame.sprite.Group):
                 self.keyboard_offset()
                 self.custom_draw()
             # __class__.drawing = inner
-            setattr(__class__, "drawing", inner)
+            setattr(self, "drawing", inner)
         else:
             def inner(self, player):
                 self.player_offset(player)
                 self.custom_draw()
             # __class__.drawing = inner
-            setattr(__class__, "drawing", inner)
+            setattr(self, "drawing", inner)
 
     def set_keyboard_speed(self, speed):
         self.keyboard_speed = speed

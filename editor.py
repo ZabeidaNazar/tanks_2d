@@ -7,11 +7,8 @@ from tank import *
 from block import *
 from camera import CameraGroup
 from base import ButtonWithImage, ButtonIcon, Area, Label, ButtonText
-from menu import Menu
-import pyautogui
-from pygame_menu.widgets import TextInput
-import pygame_menu
-from modes.mode_settings import MODE_DATA
+from menu import Menu, menus
+from windows import *
 
 pygame.init()
 pygame.display.set_caption(editor_caption)
@@ -36,6 +33,7 @@ class MapBuilder:
 
         # create game elements
         self.camera_group = CameraGroup(target="keyboard")
+        self.camera_group.set_keyboard_speed(10)
         self.player_obstacles_group = pygame.sprite.Group()
         self.enemies_group = pygame.sprite.Group()
         self.player_group = pygame.sprite.Group()
@@ -116,11 +114,16 @@ class MapBuilder:
         self.new_game_map[y][x] = 2
         # self.level_data["blocks map"][y][x] = 2
 
+    def home(self):
+        self.main_screen = pygame.display.set_mode(RES)
+        self.playing = False
+        menus.run_loop(self.main_screen, self.time)
+
     def create_menus(self):
         # settings menu
         self.settings_menu = Menu("editor settings menu", background_color)
         sett_editor_info = Label(0, 0, editor_info, bg_color=(100, 180, 180), shift_x=20, shift_y=20, line_space=0,
-                               width=1000)
+                                 width=1000)
         btn_back = ButtonText(WIDTH // 2, 530, (30, 255, 30), "Назад", font_color=(20, 20, 255), font_size=40,
                               border_radius=10,
                               hover_color=hover_color, center_x=True)
@@ -130,28 +133,34 @@ class MapBuilder:
         # elements menu
         self.elements_menu = Menu("elements menu", (100, 100, 100))
 
-        menu_background = Area(0, 0, 360, 80, -1, (96, 96, 96))
+        menu_background = Area(0, 0, 400, 80, -1, (96, 96, 96))
 
-        btn_home_icon = ButtonIcon("images/home_icon_25_25.png", 10, 7, 25, 25)
-        btn_settings_icon = ButtonIcon("images/settings_icon_25_25.png", 10, 47, 25, 25,
-                                       on_click=self.settings_menu.run_loop, args=(self.main_screen, self.time))
+        btn_home_icon = ButtonIcon("images/home_icon_25_25.png", 10, 7, 25, 25,
+                                   on_click=self.home)
+        btn_open_icon = ButtonIcon("images/folder_25_16.png", 10, 56, 25, 16,
+                                   on_click=self.open)
+        btn_info_icon = ButtonIcon("images/info_icon_25_25.png", 50, 7, 25, 25,
+                                   on_click=self.settings_menu.run_loop, args=(self.main_screen, self.time))
+        btn_save_icon = ButtonIcon("images/save_icon_25_25.png", 50, 47, 25, 25,
+                                   on_click=self.save)
 
-        btn_block_1 = ButtonWithImage(60, 7, 65, 65, "images/wall.png", 50, 50, BUTTON_BG_COLOR,
+        btn_block_1 = ButtonWithImage(100, 7, 65, 65, "images/wall.png", 50, 50, BUTTON_BG_COLOR,
                                       active_color=BUTTON_LINE_COLOR,
                                       on_click=self.set_now_action, args=(self.create_wall_1, ))
-        btn_block_2 = ButtonWithImage(135, 7, 65, 65, "images/wall1.png", 50, 50, BUTTON_BG_COLOR,
+        btn_block_2 = ButtonWithImage(175, 7, 65, 65, "images/wall1.png", 50, 50, BUTTON_BG_COLOR,
                                       active_color=BUTTON_LINE_COLOR,
                                       on_click=self.set_now_action, args=(self.create_wall_2, ))
-        btn_simple_tank = ButtonWithImage(210, 7, 65, 65, "images/panzer.png", 50, 50, BUTTON_BG_COLOR,
+        btn_simple_tank = ButtonWithImage(250, 7, 65, 65, "images/panzer.png", 50, 50, BUTTON_BG_COLOR,
                                           active_color=BUTTON_LINE_COLOR,
                                           on_click=self.set_now_action, args=(self.create_tank, ))
-        btn_auto_tank = ButtonWithImage(285, 7, 65, 65, "images/enemy.png", 50, 50, BUTTON_BG_COLOR,
+        btn_auto_tank = ButtonWithImage(325, 7, 65, 65, "images/enemy.png", 50, 50, BUTTON_BG_COLOR,
                                         active_color=BUTTON_LINE_COLOR,
                                         on_click=self.set_now_action, args=(self.create_auto_tank, ))
 
         self.buttons = [btn_block_1, btn_block_2, btn_simple_tank, btn_auto_tank]
 
-        self.elements_menu.add_item(menu_background, btn_home_icon, btn_settings_icon,
+        self.elements_menu.add_item(menu_background,
+                                    btn_home_icon, btn_open_icon, btn_info_icon, btn_save_icon,
                                     btn_block_1, btn_block_2, btn_simple_tank, btn_auto_tank)
 
         setattr(self.elements_menu, "rect", menu_background.rect)
@@ -160,7 +169,8 @@ class MapBuilder:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.playing = False
-            elif event.type == pygame.MOUSEBUTTONDOWN:
+                exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 2:
                     self.hand_active = True
                     self.hand_pos = event.pos
@@ -255,64 +265,40 @@ class MapBuilder:
                 self.files.remove(file)
 
     def save(self):
-        #         "Введіть назву ігрової карти:"
-        #
-        #         input = TextInput('fg', default='', input_type=pygame_menu.locals.INPUT_TEXT)
-        #         input.set_position(20, 20)  # Встановлюємо розташування
-        #         input.update_font({
-        #             'size': 36,
-        #             'color': (255, 50, 50),
-        #             'background_color': (50, 100, 100),
-        #             'antialias': True,  # Включити згладжування шрифта (antialiasing)
-        #             'name': 'Arial',  # Ім'я шрифта
-        #             'selected_color': (0, 0, 255)  # Колір для вибраного поля
-        # })
-        #
-        #         print(input.get_width())
-        #         print(input.get_height())
-        #         while self.playing:
-        #             events = pygame.event.get()
-        #             for event in events:
-        #                 if event.type == pygame.QUIT:
-        #                     self.playing = False
-        #             pygame.draw.rect(self.main_screen, (255, 100, 100), (50, 50, 100, 100), 2)
-        #             input.update(events)
-        #             input.draw(self.main_screen)
-        #             if input.get_value():
-        #                 print(input.get_value())
-        #             pygame.display.flip()
-        #
-        #
-        #
-        #         return
-
-        res = pyautogui.prompt(text="Введіть назву ігрової карти:")
-        if res is None:
+        res, ok = get_text_input("Введіть назву рівня:")
+        if not ok:
             return
+        elif res == "":
+            show_mess("Ви не ввели назву рівня!")
+            return
+
         files = os.listdir(self.maps_folder)
         while res + ".json" in files:
-            res = pyautogui.prompt(text="Така назва вже існує, повторіть спробу!\nВведіть назву ігрової карти:")
-            if res is None:
+            res, ok = get_text_input("Така назва вже існує, повторіть спробу!\nВведіть назву ігрової карти:")
+            if not ok:
                 return
-        if res:
-            level_data = {
-                "tanks": {
-                    "simple tanks": [(tank.start_x // BLOCKSIZE, tank.start_y // BLOCKSIZE) for tank in
-                                     self.player_group],
-                    "auto tanks": [(tank.start_x // BLOCKSIZE, tank.start_y // BLOCKSIZE) for tank in
-                                   self.enemies_group]
-                },
-                "blocks map": self.new_game_map
-            }
 
-            try:
-                with open(f"{self.maps_folder}/{res}.json", "w") as file:
-                    json.dump(level_data, file, indent=4)
-            except Exception as e:
-                print(e)
+        level_data = {
+            "tanks": {
+                "simple tanks": [(tank.start_x // BLOCKSIZE, tank.start_y // BLOCKSIZE) for tank in
+                                 self.player_group],
+                "auto tanks": [(tank.start_x // BLOCKSIZE, tank.start_y // BLOCKSIZE) for tank in
+                               self.enemies_group]
+            },
+            "blocks map": self.new_game_map
+        }
+
+        try:
+            with open(f"{self.maps_folder}/{res}.json", "w") as file:
+                json.dump(level_data, file, indent=4)
+        except Exception as e:
+            print(e)
+
+    def open(self):
+        self.view()
+        print(get_select_input(self.files))
 
     def run(self):
-        self.camera_group.set_keyboard_speed(10)
         while self.playing:
             self.main_screen.fill((60, 60, 255))
             self.get_event()
@@ -320,15 +306,10 @@ class MapBuilder:
             self.get_mouse()
             self.hand_move()
 
-            self.camera_group.drawing()
+            self.camera_group.drawing(self.camera_group)
 
             self.elements_menu.draw(window=self.main_screen)
 
             pygame.display.flip()
             pygame.display.set_caption(f"{editor_caption}  fps:  {str(round(self.time.get_fps(), 0))}")
             self.time.tick(60)
-
-
-if __name__ == "__main__":
-    game = MapBuilder()
-    game.run()
